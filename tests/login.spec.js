@@ -1,24 +1,33 @@
 //@ts-check
 
 import { test, expect } from "@playwright/test";
+import { getTokenfromAPI } from "../helpers/webAPItokens.js";
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page , request}) => {
+
+  // Get the token from the API helper
+  const ResponseToken = await getTokenfromAPI(request);
+  console.log("Token from API:", ResponseToken);
+  
+  
+  page.addInitScript(value => {
+    // Inject a script to set the localStorage item
+
+    window.localStorage.setItem('token', value);
+  }, ResponseToken);
+
   await page.goto("https://rahulshettyacademy.com/client/");
+   
 
-  const userEmail = page.locator("#userEmail");
-  const userPass = page.locator("#userPassword");
 
-  await userEmail.fill("laraib@gmail.com");
-  await userPass.fill("Click123@");
-
-  await page.locator("#login").click();
-
-  // ✅ Wait for products to load
-  await page.waitForSelector(".card-body");
+  await page.goto("https://rahulshettyacademy.com/client/");
+   
 });
 
 test("Verify the content of the Cart page and order ID", async ({ page }) => {
   // Add ADIDAS ORIGINAL to the cart before verifying
+    await page.waitForSelector(".card-body");
+
   const productList = page.locator(".card-body");
   const count = await productList.count();
 
